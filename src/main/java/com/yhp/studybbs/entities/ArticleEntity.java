@@ -1,7 +1,6 @@
 package com.yhp.studybbs.entities;
 
 import java.util.Date;
-import java.util.Objects;
 
 public class ArticleEntity {
     private int index;
@@ -93,18 +92,5 @@ public class ArticleEntity {
     public ArticleEntity setDeleted(boolean deleted) {
         isDeleted = deleted;
         return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ArticleEntity that = (ArticleEntity) o;
-        return index == that.index;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(index);
     }
 }

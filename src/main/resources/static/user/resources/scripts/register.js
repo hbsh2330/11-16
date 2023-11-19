@@ -52,7 +52,7 @@ mainForm['infoEmailSend'].onclick = function () {
         loading.hide();
         if (xhr.status >= 200 && xhr.status < 300) {
             const responseObject = JSON.parse(xhr.responseText);
-            switch (responseObject['result']) {
+            switch (responseObject['result']) { //controller로 부터 받은 result의 값을 출력
                 case 'failure':
                     dialog.show({
                         title: '오류',
@@ -74,7 +74,7 @@ mainForm['infoEmailSend'].onclick = function () {
                     });
                     break;
                 case 'success':
-                    mainForm['infoEmailSalt'].value = responseObject['salt'];
+                    mainForm['infoEmailSalt'].value = responseObject['salt']; //infoEmailSalt의 값에 responseObject로 받은 salt를 대입한다.
                     mainForm['infoEmail'].setAttribute('disabled', '');
                     mainForm['infoEmailSend'].setAttribute('disabled', '');
                     mainForm['infoEmailCode'].removeAttribute('disabled');
@@ -327,6 +327,7 @@ mainForm.onsubmit = function (e) {
                     })]
                 });
                 return;
+
             }
             if (mainForm['infoNickname'].value === '') {
                 dialog.show({
@@ -494,83 +495,81 @@ mainForm.onsubmit = function (e) {
                 if (xhr.readyState !== XMLHttpRequest.DONE) {
                     return;
                 }
-                loading.hide();
-                if (xhr.status < 200 || xhr.status >= 300) {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    const responseObject = JSON.parse(xhr.responseText);
+                    switch (responseObject['result']) {
+                        case 'failure':
+                            dialog.show({
+                                title: '오류',
+                                content: '알 수 없는 이유로 회원가입하지 못하였습니다.<br><br>잠시 후 다시 시도해 주세요.',
+                                buttons: [dialog.createButton('확인', dialog.hide)]
+                            });
+                            break;
+                        case 'failure_duplicate_email':
+                            dialog.show({
+                                title: '경고',
+                                content: '해당 이메일은 이미 사용 중입니다.<br><br>회원가입 도중 해당 이메일이 이미 회원가입에 사용되었을 수 있습니다.',
+                                buttons: [dialog.createButton('확인', function () {
+                                    dialog.hide();
+                                    mainForm['infoEmailSalt'].value = '';
+                                    mainForm['infoEmail'].removeAttribute('disabled');
+                                    mainForm['infoEmail'].focus();
+                                    mainForm['infoEmail'].select();
+                                    mainForm['infoEmailSend'].removeAttribute('disabled');
+                                    mainForm['infoEmailCode'].value = '';
+                                    mainForm.querySelector('[rel="infoEmailComplete"]').classList.remove('visible');
+                                })]
+                            });
+                            break;
+                        case 'failure_duplicate_nickname':
+                            dialog.show({
+                                title: '경고',
+                                content: '해당 닉네임은 이미 사용 중입니다.<br><br>다른 닉네임을 입력해 주세요.',
+                                buttons: [dialog.createButton('확인', function () {
+                                    dialog.hide();
+                                    mainForm['infoNickname'].focus();
+                                    mainForm['infoNickname'].select();
+                                })]
+                            });
+                            break;
+                        case 'failure_duplicate_contact':
+                            dialog.show({
+                                title: '경고',
+                                content: '해당 연락처는 이미 사용 중입니다.<br><br>다른 연락처를 입력해 주세요.',
+                                buttons: [dialog.createButton('확인', function () {
+                                    dialog.hide();
+                                    mainForm['infoContactFirst'].focus();
+                                    mainForm['infoContactFirst'].select();
+                                })]
+                            });
+                            break;
+                        case 'success':
+                            dialog.show({
+                                title: '회원가입',
+                                content: '회원가입이 완료되었습니다.',
+                                buttons: [dialog.createButton('확인', function() {
+                                    dialog.hide();
+                                    mainForm.dataset.step = '3';
+                                })]
+                            });
+                            break;
+                        default:
+                            dialog.show({
+                                title: '오류',
+                                content: '서버가 예상치 못한 응답을 반환하였습니다.<br><br>잠시 후 다시 시도해 주세요.',
+                                buttons: [dialog.createButton('확인', dialog.hide)]
+                            });
+                    }
+                } else {
                     dialog.show({
                         title: '오류',
                         content: '요청을 전송하는 도중 예상치 못한 오류가 발생하였습니다.<br><br>잠시 후 다시 시도해 주세요.',
                         buttons: [dialog.createButton('확인', dialog.hide)]
                     });
-                    return;
-                }
-                const responseObject = JSON.parse(xhr.responseText);
-                switch (responseObject['result']) {
-                    case 'failure':
-                        dialog.show({
-                            title: '오류',
-                            content: '알 수 없는 이유로 회원가입하지 못하였습니다.<br><br>잠시 후 다시 시도해 주세요.',
-                            buttons: [dialog.createButton('확인', dialog.hide)]
-                        });
-                        break;
-                    case 'failure_duplicate_email':
-                        dialog.show({
-                            title: '경고',
-                            content: '해당 이메일은 이미 사용 중입니다.<br><br>회원가입 도중 해당 이메일이 이미 회원가입에 사용되었을 수 있습니다.',
-                            buttons: [dialog.createButton('확인', function () {
-                                dialog.hide();
-                                mainForm['infoEmailSalt'].value = '';
-                                mainForm['infoEmail'].removeAttribute('disabled');
-                                mainForm['infoEmail'].focus();
-                                mainForm['infoEmail'].select();
-                                mainForm['infoEmailSend'].removeAttribute('disabled');
-                                mainForm['infoEmailCode'].value = '';
-                                mainForm.querySelector('[rel="infoEmailComplete"]').classList.remove('visible');
-                            })]
-                        });
-                        break;
-                    case 'failure_duplicate_nickname':
-                        dialog.show({
-                            title: '경고',
-                            content: '해당 닉네임은 이미 사용 중입니다.<br><br>다른 닉네임을 입력해 주세요.',
-                            buttons: [dialog.createButton('확인', function () {
-                                dialog.hide();
-                                mainForm['infoNickname'].focus();
-                                mainForm['infoNickname'].select();
-                            })]
-                        });
-                        break;
-                    case 'failure_duplicate_contact':
-                        dialog.show({
-                            title: '경고',
-                            content: '해당 연락처는 이미 사용 중입니다.<br><br>다른 연락처를 입력해 주세요.',
-                            buttons: [dialog.createButton('확인', function () {
-                                dialog.hide();
-                                mainForm['infoContactFirst'].focus();
-                                mainForm['infoContactFirst'].select();
-                            })]
-                        });
-                        break;
-                    case 'success':
-                        dialog.show({
-                            title: '회원가입',
-                            content: '회원가입이 완료되었습니다.',
-                            buttons: [dialog.createButton('확인', function() {
-                                dialog.hide();
-                                mainForm.dataset.step = '3';
-                            })]
-                        });
-                        break;
-                    default:
-                        dialog.show({
-                            title: '오류',
-                            content: '서버가 예상치 못한 응답을 반환하였습니다.<br><br>잠시 후 다시 시도해 주세요.',
-                            buttons: [dialog.createButton('확인', dialog.hide)]
-                        });
                 }
             }
             xhr.open('POST', './register');
             xhr.send(formData);
-            loading.show();
             break;
         case 3:
             break;

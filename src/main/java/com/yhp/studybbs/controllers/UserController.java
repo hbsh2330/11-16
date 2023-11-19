@@ -1,6 +1,5 @@
 package com.yhp.studybbs.controllers;
 
-import com.yhp.studybbs.entities.BoardEntity;
 import com.yhp.studybbs.entities.ContactCompanyEntity;
 import com.yhp.studybbs.entities.EmailAuthEntity;
 import com.yhp.studybbs.entities.UserEntity;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.mail.MessagingException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 @Controller
@@ -32,7 +30,7 @@ public class UserController {
             produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView getLogin(@SessionAttribute(value = "user", required = false) UserEntity user) {
         ModelAndView modelAndView = new ModelAndView();
-        if (user == null) {
+        if (user == null) { //로그인을 안했다.
             modelAndView.setViewName("user/login");
         } else {
             modelAndView.setViewName("redirect:/");
@@ -151,17 +149,6 @@ public class UserController {
         return modelAndView;
     }
 
-    @RequestMapping(value = "resetPassword",
-            method = RequestMethod.PATCH,
-            produces = MediaType.TEXT_HTML_VALUE)
-    @ResponseBody
-    public String patchResetPassword(UserEntity user, EmailAuthEntity emailAuth) {
-        ResetPasswordResult result = this.userService.resetPassword(user, emailAuth);
-        JSONObject responseObject = new JSONObject();
-        responseObject.put("result", result.name().toLowerCase());
-        return responseObject.toString();
-    }
-
     @RequestMapping(value = "resetPasswordEmail",
             method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -171,7 +158,7 @@ public class UserController {
         JSONObject responseObject = new JSONObject();
         responseObject.put("result", result.name().toLowerCase());
         if (result == SendResetPasswordEmailResult.SUCCESS) {
-            responseObject.put("salt", emailAuth.getSalt());
+            responseObject.put("salt", emailAuth.getSalt()); //자바스크립트의 salt부분과 맞아야함
         }
         return responseObject.toString();
     }
@@ -181,9 +168,21 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public String patchResetPasswordEmail(EmailAuthEntity emailAuth) {
-        VerifyResetPasswordEmailResult result = this.userService.verifyResetPasswordEmail(emailAuth);
+        VerifyRegisterEmailResult result = this.userService.verifyRegisterEmail(emailAuth);
         JSONObject responseObject = new JSONObject();
         responseObject.put("result", result.name().toLowerCase());
         return responseObject.toString();
     }
+
+    @RequestMapping(value = "resetPassword",
+            method = RequestMethod.PATCH,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public String patchResetPassword(UserEntity user, EmailAuthEntity emailAuth){
+        SendResetPasswordResult result= this.userService.sendResetPassword(user, emailAuth);
+        JSONObject responseObject = new JSONObject();
+        responseObject.put("result", result.name().toLowerCase());
+        return responseObject.toString();
+    }
+
 }

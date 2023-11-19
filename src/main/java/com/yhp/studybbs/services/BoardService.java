@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BoardService {
+
     private final BoardMapper boardMapper;
 
     @Autowired
@@ -14,7 +15,7 @@ public class BoardService {
         this.boardMapper = boardMapper;
     }
 
-    public BoardEntity[] getBoards() {
+    public BoardEntity[] getBoards(){
         return this.boardMapper.selectBoards();
     }
 }
